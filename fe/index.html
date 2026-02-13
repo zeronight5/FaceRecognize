@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>人脸识别系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-user-shield"></i>
+                <h1>人脸识别系统</h1>
+            </div>
+            <div class="status">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span id="statusText">检查连接中...</span>
+            </div>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <!-- Tab切换 -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="register">
+                    <i class="fas fa-user-plus"></i>
+                    注册人脸
+                </button>
+                <button class="tab-btn" data-tab="recognize">
+                    <i class="fas fa-search"></i>
+                    识别人脸
+                </button>
+                <button class="tab-btn" data-tab="manage">
+                    <i class="fas fa-users"></i>
+                    人脸管理
+                </button>
+            </div>
+
+            <!-- 注册人脸面板 -->
+            <div class="tab-content active" id="register">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-plus"></i> 注册新人脸</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="registerForm" class="form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="personName">
+                                        <i class="fas fa-user"></i>
+                                        姓名 <span class="required">*</span>
+                                    </label>
+                                    <input type="text" id="personName" name="name" required placeholder="请输入姓名">
+                                </div>
+                                <div class="form-group">
+                                    <label for="personId">
+                                        <i class="fas fa-id-card"></i>
+                                        人员编号 <span class="required">*</span>
+                                    </label>
+                                    <input type="text" id="personId" name="personId" required placeholder="请输入人员编号">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="remark">
+                                    <i class="fas fa-comment"></i>
+                                    备注信息
+                                </label>
+                                <textarea id="remark" name="remark" rows="3" placeholder="选填，可添加备注信息"></textarea>
+                            </div>
+
+                            <div class="upload-area" id="registerUploadArea">
+                                <input type="file" id="registerImageInput" accept="image/*" hidden>
+                                <div class="upload-placeholder" id="registerPlaceholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>点击或拖拽上传人脸图片</p>
+                                    <span class="upload-hint">支持 JPG, PNG 格式，建议使用清晰的正面照</span>
+                                </div>
+                                <div class="image-preview" id="registerPreview" style="display: none;">
+                                    <img id="registerPreviewImg" src="" alt="预览">
+                                    <button type="button" class="remove-btn" id="registerRemoveBtn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    注册人脸
+                                </button>
+                                <button type="reset" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i>
+                                    重置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 识别人脸面板 -->
+            <div class="tab-content" id="recognize">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-search"></i> 人脸识别</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-area" id="recognizeUploadArea">
+                            <input type="file" id="recognizeImageInput" accept="image/*" hidden>
+                            <div class="upload-placeholder" id="recognizePlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <p>上传待识别的人脸图片</p>
+                                <span class="upload-hint">支持 JPG, PNG 格式</span>
+                            </div>
+                            <div class="image-preview" id="recognizePreview" style="display: none;">
+                                <img id="recognizePreviewImg" src="" alt="预览">
+                                <button type="button" class="remove-btn" id="recognizeRemoveBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="threshold">
+                                    <i class="fas fa-sliders-h"></i>
+                                    相似度阈值
+                                </label>
+                                <div class="slider-container">
+                                    <input type="range" id="threshold" min="0" max="100" value="60" step="5">
+                                    <span class="slider-value" id="thresholdValue">0.60</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="topK">
+                                    <i class="fas fa-list-ol"></i>
+                                    返回结果数
+                                </label>
+                                <select id="topK">
+                                    <option value="1">Top 1</option>
+                                    <option value="3">Top 3</option>
+                                    <option value="5" selected>Top 5</option>
+                                    <option value="10">Top 10</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" id="recognizeBtn">
+                                <i class="fas fa-search"></i>
+                                开始识别
+                            </button>
+                        </div>
+
+                        <!-- 识别结果 -->
+                        <div id="recognizeResults" class="results" style="display: none;">
+                            <h3><i class="fas fa-chart-line"></i> 识别结果</h3>
+                            <div id="resultsList" class="results-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 人脸管理面板 -->
+            <div class="tab-content" id="manage">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-users"></i> 人脸库管理</h2>
+                        <div>
+                            <button class="btn btn-small btn-danger" id="resetDbBtn" style="margin-right: 10px;">
+                                <i class="fas fa-database"></i>
+                                重置数据库
+                            </button>
+                            <button class="btn btn-small btn-secondary" id="refreshListBtn">
+                                <i class="fas fa-sync-alt"></i>
+                                刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="搜索姓名或编号...">
+                            <button class="btn btn-small" id="clearSearchBtn" style="margin-left: 10px;">
+                                清除
+                            </button>
+                        </div>
+                        
+                        <div class="filter-bar">
+                            <label>
+                                <input type="radio" name="filter" value="all" checked>
+                                全部 (<span id="totalCount">0</span>)
+                            </label>
+                        </div>
+                        
+                        <div id="faceList" class="face-list">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>暂无人脸数据</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>处理中...</p>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

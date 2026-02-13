@@ -1,0 +1,75 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: face-recognition-service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# ONNX模型配置
+onnx:
+  model:
+    # 人脸检测模型路径 - SCRFD
+    detection: models/det_10g.onnx
+    # 人脸识别模型路径 - ArcFace
+    recognition: models/w600k_r50.onnx
+  thread-pool:
+    # 线程池核心线程数 (建议设置为CPU核心数)
+    core-size: 4
+    # 线程池最大线程数
+    max-size: 8
+
+# Milvus向量数据库配置
+milvus:
+  host: localhost
+  port: 19530
+  username: root
+  password: Milvus
+  collection:
+    # 人脸向量集合名称
+    name: face_vectors
+    # 向量维度 (ArcFace输出512维特征向量)
+    dimension: 512
+    # 索引类型: IVF_FLAT, IVF_SQ8, IVF_PQ, HNSW
+    index-type: IVF_FLAT
+    # 度量类型: L2, IP (内积), COSINE
+    metric-type: COSINE
+    # IVF索引参数
+    nlist: 1024
+    # 搜索参数
+    nprobe: 10
+
+# 人脸识别配置
+face:
+  detection:
+    # 人脸检测置信度阈值 (0-1)
+    confidence: 0.5
+    # 输入图片尺寸 (模型输入)
+    input-size: 640
+    # 最小人脸尺寸 (像素)
+    min-face-size: 20
+  recognition:
+    # 人脸识别相似度阈值 (0-1, 建议0.4-0.7)
+    threshold: 0.6
+    # 返回Top-K个最相似结果
+    top-k: 5
+  alignment:
+    # 对齐后人脸图片尺寸
+    output-size: 112
+  debug:
+    # 是否启用调试模式 (保存检测和对齐结果图)
+    enabled: true
+    # 调试图片保存路径
+    output-dir: debug_output
+
+# 日志配置（详细配置见 logback-spring.xml）
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    root: INFO
+    com.facerecognition: DEBUG

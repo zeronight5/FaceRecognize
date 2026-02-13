@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸检测调试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background-color: #f9f9f9;
+        }
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        .preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 20px 0;
+            display: none;
+        }
+        .preview.show {
+            display: block;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+        }
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result.success {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+        .result.error {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .instructions ol {
+            margin-bottom: 0;
+        }
+        .log-hint {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 人脸检测调试工具</h1>
+        
+        <div class="instructions">
+            <h3>📋 使用说明</h3>
+            <ol>
+                <li>上传一张人脸图片（JPG/PNG格式）</li>
+                <li>点击"开始调试检测"按钮</li>
+                <li>查看<strong>后端控制台日志</strong>，了解详细的检测过程</li>
+                <li>日志会显示：模型输出shape、数据类型、检测框数量等关键信息</li>
+            </ol>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <p style="font-size: 48px; margin: 0;">📁</p>
+            <p style="font-size: 18px; margin: 10px 0;">点击或拖拽上传人脸图片</p>
+            <p style="color: #999; font-size: 14px;">支持 JPG、PNG 格式</p>
+        </div>
+
+        <img id="preview" class="preview" src="" alt="预览">
+
+        <div style="text-align: center;">
+            <button id="debugBtn" disabled>开始调试检测</button>
+            <button id="clearBtn" class="btn-secondary">清除</button>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <div class="log-hint">
+            <h3>💡 查看日志方法</h3>
+            <p><strong>方法1：IDEA控制台</strong></p>
+            <p>在IntelliJ IDEA的"Run"窗口查看实时日志输出</p>
+            
+            <p style="margin-top: 15px;"><strong>方法2：命令行</strong></p>
+            <p>如果使用 <code>mvn spring-boot:run</code> 启动，直接在命令行窗口查看</p>
+            
+            <p style="margin-top: 15px;"><strong>关键日志标记：</strong></p>
+            <ul>
+                <li><code>========== ONNX模型输出信息 ==========</code> - 模型输出详情</li>
+                <li><code>输出[X]: shape=...</code> - Tensor形状信息</li>
+                <li><code>stride=X, scoreData类型=...</code> - 数据类型</li>
+                <li><code>NMS前检测框总数:</code> - 原始检测数量</li>
+                <li><code>NMS后检测到 X 张人脸</code> - 最终结果</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const debugBtn = document.getElementById('debugBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultDiv = document.getElementById('result');
+        
+        let selectedFile = null;
+
+        // 点击上传
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        // 处理文件
+        function handleFile(file) {
+            if (!file) return;
+            
+            if (!file.type.match(/image.*/)) {
+                showResult('请上传图片文件（JPG/PNG）', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.add('show');
+                debugBtn.disabled = false;
+                hideResult();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 清除
+        clearBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            preview.classList.remove('show');
+            debugBtn.disabled = true;
+            hideResult();
+        });
+
+        // 调试检测
+        debugBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            debugBtn.disabled = true;
+            debugBtn.textContent = '检测中...';
+            hideResult();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const response = await fetch('http://localhost:8080/api/face/debug/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    showResult(
+                        '✅ ' + data.message + '\n\n' +
+                        '📊 请查看后端控制台日志，了解详细的检测过程和模型输出信息。\n\n' +
+                        '🔍 重点查看：\n' +
+                        '• ONNX模型输出信息\n' +
+                        '• Tensor的shape和类型\n' +
+                        '• 每个stride的检测情况\n' +
+                        '• NMS前后的检测框数量\n\n' +
+                        '如果检测数量异常，日志中会显示具体原因。',
+                        'success'
+                    );
+                } else {
+                    showResult('❌ 检测失败: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showResult('❌ 请求失败: ' + error.message + '\n\n请确保后端服务已启动。', 'error');
+            } finally {
+                debugBtn.disabled = false;
+                debugBtn.textContent = '开始调试检测';
+            }
+        });
+
+        function showResult(message, type) {
+            resultDiv.textContent = message;
+            resultDiv.className = 'result show ' + type;
+        }
+
+        function hideResult() {
+            resultDiv.className = 'result';
+        }
+
+        // 页面加载时检查服务
+        window.onload = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/face/health');
+                const data = await response.json();
+                if (data.code === 200) {
+                    console.log('✅ 后端服务正常');
+                }
+            } catch (error) {
+                showResult(
+                    '⚠️ 无法连接到后端服务\n\n' +
+                    '请确保后端已启动在 http://localhost:8080',
+                    'error'
+                );
+            }
+        };
+    </script>
+</body>
+</html>

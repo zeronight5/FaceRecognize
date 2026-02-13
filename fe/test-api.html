@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #da190b;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .error {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.online {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status.offline {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 人脸识别API测试页面</h1>
+    
+    <div class="section">
+        <h2>1. 健康检查</h2>
+        <button onclick="testHealth()">检查服务状态</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. 查询人脸列表</h2>
+        <button onclick="testListAll()">查询所有人脸</button>
+        <button onclick="testListByPersonId()">按PersonID查询 (P001)</button>
+        <button onclick="testListByName()">按姓名查询 (张三)</button>
+        <div id="listResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. API端点参考</h2>
+        <pre>
+<b>基础URL:</b> http://localhost:8080/api
+
+<b>可用端点:</b>
+GET  /face/health                    - 健康检查
+POST /face/register/upload           - 注册人脸 (文件上传)
+POST /face/recognize/upload          - 识别人脸 (文件上传)
+GET  /face/list                      - 查询人脸列表
+     ?personId=xxx                   - 按personId过滤
+     ?name=xxx                       - 按name过滤
+     ?limit=100                      - 限制返回数量
+GET  /face/person/{personId}         - 根据personId查询
+DELETE /face/{faceId}               - 删除单个人脸
+DELETE /face/person/{personId}      - 删除人员所有人脸
+POST /face/reset                     - 重置数据库
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>4. 危险操作</h2>
+        <button class="danger" onclick="testReset()">⚠️ 重置数据库</button>
+        <div id="resetResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        // 测试健康检查
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<p>正在检查...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/face/health`);
+                const data = await response.json();
+                
+                const statusClass = data.code === 200 ? 'online' : 'offline';
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p>状态: <span class="status ${statusClass}">${data.code === 200 ? '在线' : '离线'}</span></p>
+                        <p>消息: ${data.message}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ 请求失败: ${error.message}</p>
+                        <p>请确保后端服务已启动在 http://localhost:8080</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试查询所有人脸
+        async function testListAll() {
+            const resultDiv = document.getElementById('listResult');
+            resultDiv.innerHTML = '<p>正在查询...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/face/list?limit=10`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p>✅ 查询成功</p>
+                        <p>找到 ${data.data ? data.data.length : 0} 条记录</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ 查询失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试按personId查询
+        async function testListByPersonId() {
+            const resultDiv = document.getElementById('listResult');
+            resultDiv.innerHTML = '<p>正在查询...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/face/person/P001`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p>✅ 查询成功 (personId=P001)</p>
+                        <p>找到 ${data.data ? data.data.length : 0} 条记录</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ 查询失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试按name查询
+        async function testListByName() {
+            const resultDiv = document.getElementById('listResult');
+            resultDiv.innerHTML = '<p>正在查询...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/face/list?name=张三`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p>✅ 查询成功 (name=张三)</p>
+                        <p>找到 ${data.data ? data.data.length : 0} 条记录</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ 查询失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试重置数据库
+        async function testReset() {
+            if (!confirm('⚠️ 警告：此操作将删除所有人脸数据且无法恢复！\n\n确定要继续吗？')) {
+                return;
+            }
+            
+            const resultDiv = document.getElementById('resetResult');
+            resultDiv.innerHTML = '<p>正在重置...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/face/reset`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p>✅ 重置成功</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ 重置失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载时自动检查健康状态
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html>

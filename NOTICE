@@ -1,0 +1,47 @@
+Face Recognition Service
+Copyright 2026 AI Generated Project
+
+This product includes software developed by AI assistance.
+
+This project is built upon the following open source components:
+
+================================================================================
+
+Spring Framework
+Copyright 2002-2024 Pivotal, Inc.
+Licensed under the Apache License, Version 2.0
+
+OpenCV (Open Source Computer Vision Library)
+Copyright (C) 2000-2024, Intel Corporation, all rights reserved.
+Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
+Copyright (C) 2009-2016, NVIDIA Corporation, all rights reserved.
+Licensed under the Apache License, Version 2.0
+
+ONNX Runtime
+Copyright (c) Microsoft Corporation
+Licensed under the MIT License
+
+Milvus
+Copyright 2019-2024 Zilliz
+Licensed under the Apache License, Version 2.0
+
+Apache Commons
+Copyright 2001-2024 The Apache Software Foundation
+Licensed under the Apache License, Version 2.0
+
+Hutool
+Copyright (c) 2024 looly(loolly@aliyun.com)
+Licensed under the Apache License, Version 2.0 and Mulan PSL v2
+
+Project Lombok
+Copyright (C) 2009-2024 The Project Lombok Authors
+Licensed under the MIT License
+
+InsightFace
+Copyright (c) 2018 InsightFace
+Licensed under the MIT License (models may vary)
+
+================================================================================
+
+This software contains code derived from the above projects.
+For the full text of licenses, please see the LICENSE file.

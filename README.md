@@ -266,3 +266,26 @@ docker run -d \
   face-recognition-service
 ```
 
+## 许可证
+
+本项目采用 [Apache License 2.0](LICENSE) 开源许可证。
+
+### 使用的第三方组件
+
+本项目使用了以下开源组件：
+
+- **Spring Boot** - Apache License 2.0
+- **OpenCV** - Apache License 2.0
+- **ONNX Runtime** - MIT License
+- **Milvus SDK** - Apache License 2.0
+- **Apache Commons** - Apache License 2.0
+- **Hutool** - Apache License 2.0 / Mulan PSL v2
+- **Project Lombok** - MIT License
+- **InsightFace Models** - MIT License（具体取决于模型）
+
+详细的第三方组件版权信息请参阅 [NOTICE](NOTICE) 文件。
+
+---
+
+**© 2026 Face Recognition Service - AI Generated Project**
+

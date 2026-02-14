@@ -1,7 +1,7 @@
 # 项目结构说明
 
 ```
-detFace/
+FaceRecognition/
 ├── src/
 │   └── main/
 │       ├── java/

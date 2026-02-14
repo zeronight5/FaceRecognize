@@ -12,7 +12,7 @@
 - **InsightFace** - 人脸检测和识别模型 https://github.com/deepinsight/insightface
 - **Milvus 2.3.4** - 向量数据库
 - **Java 17**、**Python 3.11** - 编程语言
-- **Minio** - 对象存储
+- **RustFS** - 对象存储（S3 兼容）
 
 ## 功能特性
 
@@ -46,6 +46,16 @@
 将模型文件放到项目根目录的 `models/` 文件夹下。
 
 ### 2. 启动Milvus向量数据库
+
+先复制环境变量模板（按需修改 AK/SK）：
+
+```bash
+# Windows (PowerShell/CMD)
+copy .env.example .env
+
+# macOS/Linux
+cp .env.example .env
+```
 
 使用Docker Compose启动Milvus:
 

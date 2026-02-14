@@ -38,3 +38,4 @@ models/*.onnx
 
 # Application
 application-local.yml
+.env
